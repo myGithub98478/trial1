@@ -1,0 +1,26 @@
+{% extends 'attendance/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Upload Note - Attendance System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center">Upload Note</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                        <a href="{% url 'notes_list' %}" class="btn btn-secondary">Back to Notes</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

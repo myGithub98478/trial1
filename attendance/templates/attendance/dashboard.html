@@ -1,0 +1,206 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Dashboard - Attendance System{% endblock %}
+
+{% block content %}
+
+{# Admin Dashboard #}
+{% if user_role == 'admin' %}
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Students</h5>
+                <h2 class="card-text">{{ total_students }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Today's Attendance</h5>
+                <h2 class="card-text">{{ today_attendance }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">Scan Devices</h5>
+                <a href="{% url 'scan_devices' %}" class="btn btn-light">Start Scan</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Attendance (Last 7 Days)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="attendanceChart" height="80"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Recent Devices</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>MAC Address</th>
+                                <th>IP Address</th>
+                                <th>Last Seen</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for device in recent_devices %}
+                            <tr>
+                                <td>{{ device.mac_address }}</td>
+                                <td>{{ device.ip_address }}</td>
+                                <td>{{ device.last_seen|timesince }} ago</td>
+                                <td>
+                                    {% if device.is_known %}
+                                        <span class="badge bg-success">Known</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Unknown</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No devices found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# Teacher Dashboard #}
+{% if user_role == 'teacher' %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Your Assignments</h2>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Deadline</th>
+                                <th>Posted At</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assignment in teacher_assignments %}
+                            <tr>
+                                <td>{{ assignment.title }}</td>
+                                <td>{{ assignment.deadline|date:'Y-m-d H:i' }}</td>
+                                <td>{{ assignment.posted_at|date:'Y-m-d H:i' }}</td>
+                                <td><a href="{% url 'assignment_detail' assignment.id %}" class="btn btn-sm btn-info">View</a></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No assignments posted yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# Student Dashboard #}
+{% if user_role == 'student' %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Your Recent Attendance</h2>
+        {% if student_profile %}
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time In</th>
+                                    <th>Time Out</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for attendance in student_attendance %}
+                                <tr>
+                                    <td>{{ attendance.date|date:'Y-m-d' }}</td>
+                                    <td>{{ attendance.time_in|time:'H:i' }}</td>
+                                    <td>{{ attendance.time_out|default:'-'|time:'H:i' }}</td>
+                                    <td>{{ attendance.status }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No attendance records found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-warning">Your student profile is not linked. Please contact an administrator.</div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% if user_role == 'admin' %}
+<script>
+    const ctx = document.getElementById('attendanceChart').getContext('2d');
+    const attendanceChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ days_labels|safe }},
+            datasets: [{
+                label: 'Attendance',
+                data: {{ attendance_counts|safe }},
+                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    precision: 0
+                }
+            }
+        }
+    });
+</script>
+{% endif %}
+{% endblock %} 

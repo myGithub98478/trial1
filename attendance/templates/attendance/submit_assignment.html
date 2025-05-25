@@ -1,0 +1,27 @@
+{% extends 'attendance/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Submit Assignment - Attendance System{% endblock %}
+
+{% block content %}
+<h2>Submit Assignment: {{ assignment.title }}</h2>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center">Submit Assignment</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <a href="{% url 'assignment_detail' assignment.id %}" class="btn btn-secondary">Back</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

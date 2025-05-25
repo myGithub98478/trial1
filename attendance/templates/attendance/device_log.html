@@ -1,0 +1,55 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Device Log - Attendance System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Device Log</h2>
+</div>
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>MAC Address</th>
+                        <th>IP Address</th>
+                        <th>First Seen</th>
+                        <th>Last Seen</th>
+                        <th>Status</th>
+                        <th>Student</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for device in devices %}
+                    <tr>
+                        <td>{{ device.mac_address }}</td>
+                        <td>{{ device.ip_address }}</td>
+                        <td>{{ device.first_seen|date:'Y-m-d H:i' }}</td>
+                        <td>{{ device.last_seen|date:'Y-m-d H:i' }}</td>
+                        <td>
+                            {% if device.is_known %}
+                                <span class="badge bg-success">Known</span>
+                            {% else %}
+                                <span class="badge bg-warning">Unknown</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if device.student %}
+                                {{ device.student.name }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No device logs found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %} 

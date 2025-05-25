@@ -1,0 +1,64 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Assignment Details - Attendance System{% endblock %}
+
+{% block content %}
+<h2>{{ assignment.title }}</h2>
+<p><strong>Description:</strong> {{ assignment.description }}</p>
+<p><strong>Deadline:</strong> {{ assignment.deadline|date:'Y-m-d H:i' }}</p>
+<p><strong>Posted By:</strong> {{ assignment.posted_by.username }}</p>
+{% if assignment.file %}
+    <p><strong>File:</strong> <a href="{{ assignment.file.url }}" class="btn btn-sm btn-success">Download</a></p>
+{% endif %}
+
+{% if user.userprofile.role == 'student' %}
+    {% if user_submission %}
+        <div class="alert alert-info">You have already submitted this assignment.</div>
+        <p><strong>Submitted At:</strong> {{ user_submission.submitted_at|date:'Y-m-d H:i' }}</p>
+        <p><strong>Marks:</strong> {{ user_submission.marks|default:'-' }}</p>
+        <p><strong>Feedback:</strong> {{ user_submission.feedback|default:'-' }}</p>
+        <p><strong>Your File:</strong> <a href="{{ user_submission.file.url }}" class="btn btn-sm btn-success">Download</a></p>
+    {% else %}
+        <a href="{% url 'submit_assignment' assignment.id %}" class="btn btn-primary">Submit Assignment</a>
+    {% endif %}
+{% endif %}
+
+{% if user.userprofile.role == 'teacher' %}
+    <h4 class="mt-4">Submissions</h4>
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Submitted At</th>
+                            <th>File</th>
+                            <th>Marks</th>
+                            <th>Feedback</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for submission in submissions %}
+                        <tr>
+                            <td>{{ submission.student.username }}</td>
+                            <td>{{ submission.submitted_at|date:'Y-m-d H:i' }}</td>
+                            <td><a href="{{ submission.file.url }}" class="btn btn-sm btn-success">Download</a></td>
+                            <td>{{ submission.marks|default:'-' }}</td>
+                            <td>{{ submission.feedback|default:'-' }}</td>
+                            <td><a href="{% url 'grade_submission' submission.id %}" class="btn btn-sm btn-primary">Grade</a></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">No submissions yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endif %}
+<a href="{% url 'assignments_list' %}" class="btn btn-secondary mt-3">Back to Assignments</a>
+{% endblock %} 

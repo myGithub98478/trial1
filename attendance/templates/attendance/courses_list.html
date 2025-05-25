@@ -1,0 +1,54 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}Courses - Attendance System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Courses</h2>
+    {% if user.userprofile.role in 'admin,teacher' %}
+    <a href="{% url 'add_course' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add Course
+    </a>
+    {% endif %}
+</div>
+
+<div class="row">
+    {% for course in courses %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ course.code }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ course.name }}</h6>
+                <p class="card-text">{{ course.description|truncatewords:30 }}</p>
+                <p class="card-text">
+                    <small class="text-muted">
+                        Teacher: {{ course.teacher.get_full_name|default:course.teacher.username }}
+                    </small>
+                </p>
+                <p class="card-text">
+                    <small class="text-muted">
+                        Students: {{ course.students.count }}
+                    </small>
+                </p>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{% url 'course_detail' course.id %}" class="btn btn-outline-primary btn-sm">
+                    View Details
+                </a>
+                {% if user.userprofile.role in 'admin,teacher' and user == course.teacher %}
+                <a href="{% url 'edit_course' course.id %}" class="btn btn-outline-secondary btn-sm">
+                    Edit
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            No courses found.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %} 

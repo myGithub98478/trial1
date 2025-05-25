@@ -1,0 +1,12 @@
+Django==5.0.2
+requests==2.31.0
+beautifulsoup4==4.12.2
+python-dotenv==1.0.1
+django-crispy-forms==2.1
+crispy-bootstrap5==2024.2
+django-allauth==0.56.0
+django-allauth-2fa==2.0.0
+django-allauth-2fa-totp==2.0.0
+django-allauth-2fa-yubikey==2.0.0
+django-allauth-2fa-email==2.0.0
+django-allauth-2fa-duo==2.0.0

@@ -1,0 +1,106 @@
+{% extends 'attendance/base.html' %}
+
+{% block title %}{{ course.code }} - {{ course.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2>{{ course.code }} - {{ course.name }}</h2>
+        <p class="text-muted">Teacher: {{ course.teacher.get_full_name|default:course.teacher.username }}</p>
+    </div>
+    {% if user.userprofile.role in 'admin,teacher' and user == course.teacher %}
+    <a href="{% url 'edit_course' course.id %}" class="btn btn-primary">
+        <i class="fas fa-edit"></i> Edit Course
+    </a>
+    {% endif %}
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Course Description</h5>
+            </div>
+            <div class="card-body">
+                {{ course.description|linebreaks }}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Assignments</h5>
+                {% if user.userprofile.role in 'admin,teacher' and user == course.teacher %}
+                <a href="{% url 'post_assignment' %}?course={{ course.id }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Post Assignment
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Posted</th>
+                                <th>Deadline</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assignment in assignments %}
+                            <tr>
+                                <td>{{ assignment.title }}</td>
+                                <td>{{ assignment.posted_at|date:"M d, Y" }}</td>
+                                <td>{{ assignment.deadline|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    {% if assignment.deadline < now %}
+                                        <span class="badge bg-danger">Overdue</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'assignment_detail' assignment.id %}" class="btn btn-sm btn-outline-primary">
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No assignments posted yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Enrolled Students</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for student in students %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ student.name }}</h6>
+                            <small>{{ student.student_id }}</small>
+                        </div>
+                        <small class="text-muted">{{ student.email }}</small>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-muted">
+                        No students enrolled yet.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
